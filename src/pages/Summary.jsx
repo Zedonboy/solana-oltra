@@ -15,14 +15,15 @@
 */
 import { Fragment, useEffect, useState } from "react";
 import { StarIcon } from "@heroicons/react/20/solid";
+import {DocumentDuplicateIcon} from "@heroicons/react/24/outline"
 import { Tab } from "@headlessui/react";
 import { useParams } from "react-router-dom";
 import { API_URL } from "../../config";
-import { ethers } from "ethers";
 
 import { useRecoilState, useRecoilValue } from "recoil";
 import { signerAtom } from "../atoms";
 import PaymentSuccessDialog from "../components/PaymentSuccessDialog";
+import { toast } from "react-toastify";
 const product = {
   name: "Application UI Icon Pack",
   version: { name: "1.0", date: "June 5, 2021", datetime: "2021-06-05" },
@@ -121,7 +122,9 @@ export default function Summary() {
   let [book, setBook] = useState(null);
   let signerValue = useRecoilValue(signerAtom);
   let [showPaySuccess, setShowPaySuccess] = useState(false);
+  let [paymentStep, setPaymentStep] = useState(0)
   let [processing, setProcessing] = useState(false);
+  let [txhash, setTxHash] = useState("")
   useEffect(() => {
     let task = async () => {
       let resp = await fetch(`${API_URL}/books/${params.id}`);
@@ -179,7 +182,7 @@ export default function Summary() {
           </div>
 
           {/* Product details */}
-          <div className="mx-auto mt-14 max-w-2xl sm:mt-16 lg:col-span-3 lg:row-span-2 lg:row-end-2 lg:mt-0 lg:max-w-none">
+          <div className="mx-auto mt-14 w-full max-w-2xl sm:mt-16 lg:col-span-3 lg:row-span-2 lg:row-end-2 lg:mt-0 lg:max-w-none">
             <div className="flex flex-col-reverse">
               <div className="mt-4">
                 <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
@@ -217,86 +220,90 @@ export default function Summary() {
 
             <p className="mt-6 text-gray-500">{book.attributes.description}</p>
 
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+            <div className="mt-10 grid w-full grid-cols-1 gap-x-6 gap-y-4">
+              {paymentStep === 1 ? (
+                 <div>
+                 <p className="font-light text-sm">Send {book.attributes.price} OLT only, to the address below</p>
+                 <div className="border-green-400 flex mt-4 text-green-40 space-x-12 bg-green-50 rounded-md border-2 p-2">
+                   <div>{book.attributes.author_address}</div>
+                   <button onClick={e => {
+                     navigator.clipboard.writeText(book.attributes.author_address).then(e => {
+                       toast.success("Copied")
+                     })
+                   }}>
+                     <DocumentDuplicateIcon className="w-5 h-5"/>
+                   </button>
+                 </div>
+               </div>
+              ) : null}
+
+              {paymentStep === 2 ? (
+                <div>
+                <label htmlFor="signature" className="block text-sm font-medium text-gray-700">
+                  Transaction Id
+                </label>
+                <div className="mt-1">
+                  <input
+                  onChange={e => {
+                    setTxHash(e.target.value)
+                  }}
+                    type="text"
+                    name="signature"
+                    value={txhash}
+                    id="signature"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Write transaction hash/signature"
+                  />
+                </div>
+              </div>
+              ) : null}
+             
               {book.attributes.public ? null : (
                 <button
                   onClick={(e) => {
-                    let task = async () => {
-                      let signer;
-                      if (!signerValue) {
-                        const provider = new ethers.providers.Web3Provider(
-                          window.ethereum
-                        );
+                    if (paymentStep === 0) {
+                      setPaymentStep(1)
+                    }
 
-                        // MetaMask requires requesting permission to connect users accounts
-                        await provider.send("eth_requestAccounts", []);
+                    if(paymentStep === 1) {
+                      setPaymentStep(2)
+                    }
 
-                        // The MetaMask plugin also allows signing transactions to
-                        // send ether and pay to change state within the blockchain.
-                        // For this, you need the account signer...
-                        signer = provider.getSigner();
-                      } else {
-                        signer = signerValue;
-                      }
-
-                      const abi = [
-                        // Read-Only Functions
-                        "function balanceOf(address owner) view returns (uint256)",
-                        "function decimals() view returns (uint8)",
-                        "function symbol() view returns (string)",
-
-                        // Authenticated Functions
-                        "function transfer(address to, uint amount) returns (bool)",
-
-                        // Events
-                        "event Transfer(address indexed from, address indexed to, uint amount)",
-                      ];
-
-                      // This can be an address or an ENS name
-                      const address =
-                        "0xD96a916d806571710F91b060265A3dB6FA238f23";
-
-                      // Read-Write; By connecting to a Signer, allows:
-                      // - Everything from Read-Only (except as Signer, not anonymous)
-                      // - Sending transactions for non-constant functions
-                      const erc20_rw = new ethers.Contract(
-                        address,
-                        abi,
-                        signer
-                      );
-
-                      let tx = await erc20_rw.transfer(
-                        book.attributes.author_address,
-                        book.attributes.price
-                      );
-
-                      let resp = await fetch(`${API_URL}/payments`, {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          data: {
-                            tx_hash: tx.hash,
-                            book: book.id,
+                    if(paymentStep === 2) {
+                      // submit
+                      if(txhash) {
+                        fetch(`${API_URL}/payments/verify`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
                           },
-                        }),
-                      });
-
-                      await tx.wait();
-                      setShowPaySuccess(true);
-                    };
-
-                    setProcessing(true);
-                    task().finally(() => {
-                      setProcessing(false);
-                    });
+                          body: JSON.stringify({
+                            tx_hash: txhash,
+                            book: book.id
+                          })
+                        }).then(resp => {
+                          if(resp.ok) {
+                            toast.success("Verified")
+                          } else {
+                            resp.json().then(e => {
+                              toast.error(e.message)
+                            })
+                          }
+                        })
+                      }
+                     
+                    }
                   }}
                   disabled={processing}
                   type="button"
                   className="flex w-full items-center disabled:bg-indigo-400 justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-8 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
                 >
-                  Pay {book.attributes.price} OLT
+                  {function(){
+                    if(paymentStep === 0) return ` Pay ${book.attributes.price} OLT`
+                    if(paymentStep === 1) return "I have paid"
+                    if(paymentStep === 2) return "Verify"
+                  }()}
+                 
                 </button>
               )}
 

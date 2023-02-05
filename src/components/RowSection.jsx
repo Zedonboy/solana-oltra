@@ -9,9 +9,7 @@ export default function RowSection({ name, action }) {
         throw new Error("Request Failed");
       }
 
-      let data = await response.json();
-
-      console.log(data);
+      let data = await response.json()
       return data
     },
   });

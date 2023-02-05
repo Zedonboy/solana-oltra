@@ -1,19 +1,6 @@
 import { useState } from "react";
+import {DocumentDuplicateIcon} from "@heroicons/react/24/outline"
 
-/*
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
-*/
 export default function BookDetailForm({ onSave }) {
   let [book, setBook] = useState({
     title: "",
@@ -40,7 +27,7 @@ export default function BookDetailForm({ onSave }) {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <div className="sm:col-span-4">
+            <div className="sm:col-span-2">
               <label
                 htmlFor="book-title"
                 className="block text-sm font-medium text-gray-700"
@@ -96,7 +83,7 @@ export default function BookDetailForm({ onSave }) {
               </div>
             </div>
 
-            <div className="sm:col-span-4 relative flex items-start">
+            <div className="sm:col-span-2 relative flex items-start">
               <div className="flex h-5 items-center">
                 <input
                   id="comments"
@@ -117,6 +104,70 @@ export default function BookDetailForm({ onSave }) {
                 <p id="comments-description" className="text-gray-500">
                   Any body can read your book, its free.
                 </p>
+              </div>
+            </div>
+
+          
+
+            <div className="sm:col-span-2">
+              <label
+                htmlFor="copies"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Number of books to publish
+              </label>
+              <div className="relative mt-1 rounded-md shadow-sm">
+                
+                <input
+                  type="text"
+                  name="price"
+                  id="copies"
+                  className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="0"
+                  onChange={e => {
+                    if(isNaN(e.target.value)) return
+                    setBook({...book, publish_number: parseInt(e.target.value)})
+                  }}
+                  aria-describedby="price-currency"
+                />
+               
+              </div>
+            </div>
+
+            <div className="sm:col-span-2">
+            <div>
+                 <p className="font-light text-xs">Send 0 OLT (publish cost), to the address below</p>
+                 <div className="border-green-400 flex mt-1 text-green-40 space-x-12 bg-green-50 rounded-md border-2 p-2">
+                   <div>csdkjjdfkhcjfhvjhfjvdvfdvdf</div>
+                   <button onClick={e => {
+                     navigator.clipboard.writeText(book.attributes.author_address).then(e => {
+                       toast.success("Copied")
+                     })
+                   }}>
+                     <DocumentDuplicateIcon className="w-5 h-5"/>
+                   </button>
+                 </div>
+               </div>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label
+                htmlFor="book-title"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Transaction Signature of payment
+              </label>
+              <div className="mt-1 flex rounded-md shadow-sm">
+                <input
+                  onChange={(e) => {
+                    setBook({ ...book, title: e.target.value });
+                  }}
+                  type="text"
+                  name="book"
+                  id="book-title"
+                  autoComplete="book-title"
+                  className="block w-full min-w-0 flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
               </div>
             </div>
 

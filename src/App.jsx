@@ -7,7 +7,9 @@ import Home from "./pages/Home";
 import MyBooks from "./pages/myBooks";
 import CreateBook from "./pages/createBook";
 import { API_URL } from "../config";
-import {ethers} from "ethers"
+import bs58 from 'bs58'
+
+
 const navigation = [
   { name: "Home", href: "#", current: true },
   { name: "My Books", href: "/#/my-books", current: false },
@@ -15,7 +17,7 @@ const navigation = [
   { name: "Bookmarks", href: "/#/bookmark", current: false },
 ];
 
-import {useRecoilState} from "recoil"
+import { useRecoilState } from "recoil";
 import { jwtState } from "./atoms";
 import Summary from "./pages/Summary";
 import Read from "./pages/read";
@@ -25,11 +27,10 @@ function classNames(...classes) {
 }
 
 export default function Example() {
-  const [jwt, setJwt] = useRecoilState(jwtState)
-  const [currentNav, setCurrentNav] = useState(0)
+  const [jwt, setJwt] = useRecoilState(jwtState);
+  const [currentNav, setCurrentNav] = useState(0);
   return (
     <>
-     
       <div className="min-h-full">
         <Disclosure as="nav" className="border-b border-gray-200 bg-white">
           {({ open }) => (
@@ -53,11 +54,11 @@ export default function Example() {
                       {navigation.map((item, i) => (
                         <button
                           key={item.name}
-                          onClick={e => {
-                            navigation[currentNav].current = false
-                            navigation[i].current = true
-                            setCurrentNav(i)
-                            window.location.href = item.href
+                          onClick={(e) => {
+                            navigation[currentNav].current = false;
+                            navigation[i].current = true;
+                            setCurrentNav(i);
+                            window.location.href = item.href;
                           }}
                           className={classNames(
                             item.current
@@ -73,51 +74,79 @@ export default function Example() {
                     </div>
                   </div>
                   <div className="hidden sm:ml-6 sm:flex sm:items-center">
-                    {jwt ? ( <button
-                    onClick={e => {
-                     setJwt(null)
-                    }}
-                      type="button"
-                      className="inline-flex items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                    >
-                      Disconnect Wallet
-                    </button>) : ( <button
-                    onClick={e => {
-                      let task1 = async () => {
-                        let resp = await fetch(`${API_URL}/sessions`);
-                        let data = await resp.json()
+                    {jwt ? (
+                      <button
+                        onClick={(e) => {
+                          setJwt(null);
+                        }}
+                        type="button"
+                        className="inline-flex items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                      >
+                        Disconnect Wallet
+                      </button>
+                    ) : (
+                      (function () {
+                        const isPhantomInstalled = window.phantom?.solana?.isPhantom
 
-                        const provider = new ethers.providers.Web3Provider(window.ethereum)
-                        await provider.send("eth_requestAccounts", []);
-                        let signer = provider.getSigner()
+                        if(!isPhantomInstalled) {
+                          return  <button
+                          onClick={(e) => {
+                            window.open('https://phantom.app/', '_blank');
+                          }}
+                          type="button"
+                          className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        >
+                          Download Phantom Wallet
+                        </button>
+                        }
 
-                        let signedMessage = await signer.signMessage(data.key)
-                        let address = await signer.getAddress()
-                        resp = await fetch(`${API_URL}/sessions`, {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json"
-                          },
-                          body: JSON.stringify({
-                            key: data.key,
-                            address,
-                            signature: signedMessage
-                          })
-                        })
+                        const provider = window.phantom?.solana;
+                        return (
+                          <button
+                            onClick={(e) => {
+                              let task1 = async () => {
+                               
+                                let resp = await fetch(`${API_URL}/sessions`);
+                                let data = await resp.json();
 
-                        data = await resp.json()
-                        setJwt(data.jwt)
-                      }
+                               
+                                const phantom_resp = await provider.connect()
+                               
+                                const encodedMessage = new TextEncoder().encode(data.key);
+                                const {message, signature} = await provider.signMessage(encodedMessage, "utf8");
+                                
+                                let address = phantom_resp.publicKey.toString()
+                                resp = await fetch(`${API_URL}/sessions`, {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    "X-NETWORK": "solana"
+                                  },
+                                  body: JSON.stringify({
+                                    key: data.key,
+                                    address,
+                                    signature: bs58.encode(signature)
+                                  }),
+                                });
 
-                      task1()
-                    }}
-                    disabled={jwt}
-                      type="button"
-                      className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                      Connect Wallet
-                    </button>)}
-                   
+                                data = await resp.json();
+                                setJwt(data.jwt);
+                              };
+
+                              task1().catch(err => {
+                                console.log(err)
+                              });
+                            }}
+                            // disabled={jwt}
+                            type="button"
+                            className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                          >
+                            Connect Wallet
+                          </button>
+                        );
+                      })()
+                    )}
+
                     {/* Profile dropdown */}
                     <Menu as="div" className="relative ml-3">
                       <div>
@@ -185,22 +214,16 @@ export default function Example() {
 
         <HashRouter>
           <Routes>
-            <Route path="/" index element={<Home />}>
-            </Route>
-            <Route path="/my-books" index element={<MyBooks />}>
+            <Route path="/" index element={<Home />}></Route>
+            <Route path="/my-books" index element={<MyBooks />}></Route>
 
-            </Route>
+            <Route path="/create-book" index element={<CreateBook />}></Route>
 
-            <Route path="/create-book" index element={<CreateBook />}>
-              
-            </Route>
+            <Route path="/summary/book/:id" element={<Summary />} />
 
-            <Route path="/summary/book/:id" element={<Summary/>}/>
-
-            <Route path="/read/:id" element={<Read/>}/>
+            <Route path="/read/:id" element={<Read />} />
           </Routes>
         </HashRouter>
-
       </div>
     </>
   );
