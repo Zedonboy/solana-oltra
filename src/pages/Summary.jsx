@@ -223,7 +223,7 @@ export default function Summary() {
             <div className="mt-10 grid w-full grid-cols-1 gap-x-6 gap-y-4">
               {paymentStep === 1 ? (
                  <div>
-                 <p className="font-light text-sm">Send {book.attributes.price} OLT only, to the address below</p>
+                 <p className="font-light text-sm">Send {book.attributes.price} USDC only, to the address below</p>
                  <div className="border-green-400 flex mt-4 text-green-40 space-x-12 bg-green-50 rounded-md border-2 p-2">
                    <div>{book.attributes.author_address}</div>
                    <button onClick={e => {
@@ -299,7 +299,7 @@ export default function Summary() {
                   className="flex w-full items-center disabled:bg-indigo-400 justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-8 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
                 >
                   {function(){
-                    if(paymentStep === 0) return ` Pay ${book.attributes.price} OLT`
+                    if(paymentStep === 0) return ` Pay ${book.attributes.price} USDC`
                     if(paymentStep === 1) return "I have paid"
                     if(paymentStep === 2) return "Verify"
                   }()}

@@ -13,6 +13,7 @@ export default function RowSection({ name, action }) {
       return data
     },
   });
+  console.log(queryData.data)
   return (
     <section>
       <div>
@@ -53,9 +54,9 @@ export default function RowSection({ name, action }) {
         ) : null}
 
         {queryData.data
-          ? queryData.data.map((v) => (
+          ? queryData.data.data.map((v) => (
               <a href={`/#/summary/book/${v.id}`} className="w-48 shrink-0">
-                <Book {...v}  />
+                <Book {...v.attributes}  />
               </a>
             ))
           : null}

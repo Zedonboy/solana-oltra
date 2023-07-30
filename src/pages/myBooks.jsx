@@ -10,6 +10,7 @@ export default function MyBooks() {
   let navigator = useNavigate();
   let jwt = useRecoilValue(jwtState);
   let [books, setBooks] = useState([]);
+  let [drafts, setDraft] = useState([]);
   let [errorMssg, setError] = useState(null);
   useEffect(() => {
     let task = async () => {
@@ -20,6 +21,22 @@ export default function MyBooks() {
           Authorization: `web3auth ${jwt}`,
         },
       });
+
+      let responseDraft = await fetch(`${API_URL}/book-drafts`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `web3auth ${jwt}`,
+        },
+      });
+
+      if (responseDraft.ok) {
+        let data = await responseDraft.json();
+        setDraft(data);
+      } else {
+        let data = await responseDraft.json();
+        toast.error(data.error.message);
+      }
 
       if (response.ok) {
         let data = await response.json();
@@ -32,6 +49,8 @@ export default function MyBooks() {
 
     task();
   }, []);
+
+  console.log(books);
   return (
     <div className="py-6">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,8 +98,8 @@ export default function MyBooks() {
             </div>
           ) : (
             <div className="grid grid-cols-5 gap-2">
-              {books.map((v) => (
-                <Book {...v} />
+              {books.data.map((v) => (
+                <Book {...v.attributes} />
               ))}
             </div>
           )}
@@ -97,6 +116,8 @@ export default function MyBooks() {
           <PlusIconOutline className="h-8 w-8" aria-hidden="true" />
         </button>
       </div>
+
+     
     </div>
   );
 }

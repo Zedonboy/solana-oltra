@@ -14,7 +14,9 @@ export default function BookDetailForm({ onSave }) {
   let [firstName, setFirstName] = useState(null);
   let [lastName, setlastName] = useState(null);
   return (
-    <form className="space-y-8 divide-y divide-gray-200">
+    <form onSubmit={e => {
+      e.preventDefault()
+    }} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">
         <div>
           <div>
@@ -30,8 +32,7 @@ export default function BookDetailForm({ onSave }) {
             <div className="sm:col-span-2">
               <label
                 htmlFor="book-title"
-                className="block text-sm font-medium text-gray-700"
-              >
+                className="block text-sm font-medium text-gray-700">
                 Book Title
               </label>
               <div className="mt-1 flex rounded-md shadow-sm">
@@ -48,7 +49,7 @@ export default function BookDetailForm({ onSave }) {
               </div>
             </div>
 
-            <div className="sm:col-span-2">
+            {/* <div className="sm:col-span-2">
               <label
                 htmlFor="price"
                 className="block text-sm font-medium text-gray-700"
@@ -81,9 +82,9 @@ export default function BookDetailForm({ onSave }) {
                   </span>
                 </div>
               </div>
-            </div>
+            </div> */}
 
-            <div className="sm:col-span-2 relative flex items-start">
+            {/* <div className="sm:col-span-2 relative flex items-start">
               <div className="flex h-5 items-center">
                 <input
                   id="comments"
@@ -105,11 +106,11 @@ export default function BookDetailForm({ onSave }) {
                   Any body can read your book, its free.
                 </p>
               </div>
-            </div>
+            </div> */}
 
           
 
-            <div className="sm:col-span-2">
+            {/* <div className="sm:col-span-2">
               <label
                 htmlFor="copies"
                 className="block text-sm font-medium text-gray-700"
@@ -132,9 +133,9 @@ export default function BookDetailForm({ onSave }) {
                 />
                
               </div>
-            </div>
+            </div> */}
 
-            <div className="sm:col-span-2">
+            {/* <div className="sm:col-span-2">
             <div>
                  <p className="font-light text-xs">Send 0 OLT (publish cost), to the address below</p>
                  <div className="border-green-400 flex mt-1 text-green-40 space-x-12 bg-green-50 rounded-md border-2 p-2">
@@ -148,9 +149,9 @@ export default function BookDetailForm({ onSave }) {
                    </button>
                  </div>
                </div>
-            </div>
+            </div> */}
 
-            <div className="sm:col-span-2">
+            {/* <div className="sm:col-span-2">
               <label
                 htmlFor="book-title"
                 className="block text-sm font-medium text-gray-700"
@@ -169,7 +170,7 @@ export default function BookDetailForm({ onSave }) {
                   className="block w-full min-w-0 flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
-            </div>
+            </div> */}
 
             <div className="sm:col-span-6">
               <label

@@ -21,6 +21,8 @@ import { useRecoilState } from "recoil";
 import { jwtState } from "./atoms";
 import Summary from "./pages/Summary";
 import Read from "./pages/read";
+import EditDraft from "./pages/editDraft";
+import Continue from "./pages/continue";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -119,8 +121,7 @@ export default function Example() {
                                 resp = await fetch(`${API_URL}/sessions`, {
                                   method: "POST",
                                   headers: {
-                                    "Content-Type": "application/json",
-                                    "X-NETWORK": "solana"
+                                    "Content-Type": "application/json"
                                   },
                                   body: JSON.stringify({
                                     key: data.key,
@@ -214,7 +215,9 @@ export default function Example() {
 
         <HashRouter>
           <Routes>
+
             <Route path="/" index element={<Home />}></Route>
+
             <Route path="/my-books" index element={<MyBooks />}></Route>
 
             <Route path="/create-book" index element={<CreateBook />}></Route>
@@ -222,6 +225,10 @@ export default function Example() {
             <Route path="/summary/book/:id" element={<Summary />} />
 
             <Route path="/read/:id" element={<Read />} />
+
+            <Route path="/draft/:id" element={<EditDraft/>}/>
+
+            <Route path="/continue" element={<Continue/>}/>
           </Routes>
         </HashRouter>
       </div>

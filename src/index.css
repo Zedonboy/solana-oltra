@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-.ck-editor__editable {
+/* .ck-editor__editable {
     min-height: 500px;
+} */
+
+
+.ce-toolbar__plus {
+    height: 3rem;
+    width: 3rem;
+}
+
+.ce-toolbar__plus > svg {
+    height: 3rem;
+    width: 3rem;
+}
+
+.ce-toolbar__settings-btn {
+    height: 3rem;
+    width: 3rem;
+}
+
+.ce-toolbar__settings-btn > svg {
+    height: 3rem;
+    width: 3rem;
+}
+.cdx-block {
+    @apply text-lg
 }
